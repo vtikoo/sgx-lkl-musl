@@ -1874,7 +1874,11 @@ void __dls3(sgxlkl_app_config_t *app_config, void *tos)
 	app.name = argv[0];
 	aux[AT_ENTRY] = (size_t)laddr(&app, ehdr->e_entry);
 
+sgxlkl_info("SEAN F =====> 5\n");
+
 	if (app.tls.size) {
+		sgxlkl_info("SEAN F =====> 6\n");
+
 		libc.tls_head = tls_tail = &app.tls;
 		app.tls_id = tls_cnt = 1;
 #ifdef TLS_ABOVE_TP
@@ -1890,6 +1894,9 @@ void __dls3(sgxlkl_app_config_t *app_config, void *tos)
 #endif
 		tls_align = MAXP2(tls_align, app.tls.align);
 	}
+
+	sgxlkl_info("SEAN F =====> 7\n");
+
 	decode_dyn(&app);
 	if (DL_FDPIC) {
 		makefuncdescs(&app);
@@ -1904,6 +1911,8 @@ void __dls3(sgxlkl_app_config_t *app_config, void *tos)
 		argv[-3] = (void *)app.loadmap;
 	}
 
+	sgxlkl_info("SEAN F =====> 8\n");
+
 	/* Initial dso chain consists only of the app. */
 	head = tail = syms_tail = &app;
 
@@ -1912,11 +1921,15 @@ void __dls3(sgxlkl_app_config_t *app_config, void *tos)
 	//reclaim_gaps(&app);
 	//reclaim_gaps(&ldso);
 
+	sgxlkl_info("SEAN F =====> 9\n");
+
 	/* Load preload/needed libraries, add symbols to global namespace. */
 	if (env_preload) load_preload(env_preload);
  	load_deps(&app);
 	for (struct dso *p=head; p; p=p->next)
 		add_syms(p);
+
+	sgxlkl_info("SEAN F =====> 10\n");
 
 	for (i=0; app.dynv[i]; i+=2) {
 		if (!DT_DEBUG_INDIRECT && app.dynv[i]==DT_DEBUG)
@@ -1927,12 +1940,16 @@ void __dls3(sgxlkl_app_config_t *app_config, void *tos)
 		}
 	}
 
+	sgxlkl_info("SEAN F =====> 11\n");
+
 	/* The main program must be relocated LAST since it may contin
 	 * copy relocations which depend on libraries' relocations. */
 	reloc_all(app.next);
 	reloc_all(&app);
 
 	__init_utls(&app.tls);
+
+	sgxlkl_info("SEAN F =====> 12\n");
 
 	update_tls_size();
 	void *initial_tls = calloc(libc.tls_size, 1);
@@ -1942,12 +1959,17 @@ void __dls3(sgxlkl_app_config_t *app_config, void *tos)
 		_exit(127);
 	}
 
+	sgxlkl_info("SEAN F =====> 13\n");
+
     struct lthread *lt = lthread_self();
     lt->itls = initial_tls;
     lt->itlssz = libc.tls_size;
 	if (__init_utp(__copy_utls(lt, lt->itls, lt->itlssz), 1) < 0) {
 		a_crash();
 	}
+
+		sgxlkl_info("SEAN F =====> 14\n");
+
 //	else {
 //		size_t tmp_tls_size = libc.tls_size;
 //		pthread_t self = __pthread_self();
