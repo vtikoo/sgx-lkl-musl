@@ -63,7 +63,7 @@ int __init_utp(void *p, int set_tp)
 				}
 				sgxlkl_info("SEAN G =====> 6\n");
 
-			__asm__ volatile("wrfsbase %0" ::"r"(TP_ADJ(p)));
+			__asm__ volatile("wrfsbase %0" ::"r"(p));
 		}
 	}
 
