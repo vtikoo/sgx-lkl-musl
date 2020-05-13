@@ -1940,8 +1940,6 @@ sgxlkl_info("SEAN F =====> 5\n");
 			*ptr = (size_t)&debug;
 		}
 	}
-	sgxlkl_info("SEAN F =====> 13\n");
-	sgxlkl_info("SEAN F =====> 13\n");
 
 	sgxlkl_info("SEAN F =====> 11\n");
 

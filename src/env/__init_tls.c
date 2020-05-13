@@ -57,9 +57,13 @@ int __init_utp(void *p, int set_tp)
 		}
 		else
 		{
+				if (p == NULL)
+				{
+					sgxlkl_info("p is NULL\n");
+				}
 				sgxlkl_info("SEAN G =====> 6\n");
 
-			__asm__ volatile("wrfsbase %0" ::"r"(p));
+			__asm__ volatile("wrfsbase %0" ::"r"(TP_ADJ(p)));
 		}
 	}
 
