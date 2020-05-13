@@ -1665,6 +1665,7 @@ static void update_tls_size()
 {
 
 if (sgxlkl_enclave->mode != SW_DEBUG_MODE) {
+	sgxlkl_info("WE ARE IN sgxlkl_enclave->mode != SW_DEBUG_MODE code\n");
 	static int fsgsbase_warn = 0;
 	if (!libc.user_tls_enabled && tls_cnt > 0 && !fsgsbase_warn) {
 		fprintf(stderr, "[    SGX-LKL   ] Warning: The application requires thread-local storage (TLS), but the current system configuration does not allow SGX-LKL to provide full TLS support in hardware mode. See sgx-lkl-run-oe --help-tls for more information.\n");
