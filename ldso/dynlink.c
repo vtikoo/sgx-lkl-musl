@@ -1939,6 +1939,8 @@ sgxlkl_info("SEAN F =====> 5\n");
 			*ptr = (size_t)&debug;
 		}
 	}
+	sgxlkl_info("SEAN F =====> 13\n");
+	sgxlkl_info("SEAN F =====> 13\n");
 
 	sgxlkl_info("SEAN F =====> 11\n");
 
@@ -1964,6 +1966,9 @@ sgxlkl_info("SEAN F =====> 5\n");
     struct lthread *lt = lthread_self();
     lt->itls = initial_tls;
     lt->itlssz = libc.tls_size;
+
+	sgxlkl_info("SEAN F =====> 13.1\n");
+
 	if (__init_utp(__copy_utls(lt, lt->itls, lt->itlssz), 1) < 0) {
 		a_crash();
 	}

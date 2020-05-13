@@ -32,13 +32,23 @@ int __init_tp(void *p)
 
 int __init_utp(void *p, int set_tp)
 {
+	sgxlkl_info("SEAN G =====> 1\n");
+
 	struct lthread_tcb_base *tcb = (struct lthread_tcb_base *)p;
 	tcb->self = p;
+	sgxlkl_info("SEAN G =====> 2\n");
+
 	tcb->schedctx = __scheduler_self();
+		sgxlkl_info("SEAN G =====> 3\n");
+
 	if (libc.user_tls_enabled && set_tp)
 	{
+			sgxlkl_info("SEAN G =====> 4\n");
+
 		if (sgxlkl_enclave->mode == SW_DEBUG_MODE)
 		{
+				sgxlkl_info("SEAN G =====> 5\n");
+
 			int r = __set_thread_area(TP_ADJ(p));
 			if (r < 0)
 			{
@@ -47,9 +57,14 @@ int __init_utp(void *p, int set_tp)
 		}
 		else
 		{
+				sgxlkl_info("SEAN G =====> 6\n");
+
 			__asm__ volatile("wrfsbase %0" ::"r"(p));
 		}
 	}
+
+		sgxlkl_info("SEAN G =====> 7\n");
+
 	return 0;
 }
 
