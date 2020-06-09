@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "syscall.h"
 #include "atomic.h"
+#include "libc.h"
 
 #ifdef VDSO_CGT_SYM
 
