@@ -1677,7 +1677,7 @@ if (sgxlkl_enclave->mode != SW_DEBUG_MODE) {
 	}
 }
 	libc.tls_cnt = tls_cnt;
-	libc.tls_align = 16; //tls_align;
+	libc.tls_align = tls_align;
 	libc.tls_size = ALIGN(
 		(1+tls_cnt) * sizeof(void *) +
 		tls_offset +
@@ -1938,6 +1938,13 @@ void __dls3(sgxlkl_app_config_t *app_config, void *tos)
 	reloc_all(&app);
 
 	update_tls_size();
+<<<<<<< HEAD
+=======
+	// We have set tls_align to 16 in update_tls_size(), this will cause the if
+	// branch to always evaluate to true.
+	// Which is what we want(for now), as the else logic makes assumptions that the
+	// execution of the earlier stages of the linker happened in the same thread.
+>>>>>>> comment out reverting to builtin tls
 	//if (libc.tls_size > sizeof builtin_tls || tls_align > MIN_TLS_ALIGN) {
 		void *initial_tls = calloc(libc.tls_size, 1);
 		if (!initial_tls) {
