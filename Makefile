@@ -245,11 +245,11 @@ lib/libsgxlkl-user.so: $(U_OBJS)
 	$(CC) -o $@ $(U_LDFLAGS1) $(U_OBJS) $(LIBCC) $(U_LDFLAGS2)
 	$(INSTALL) -D $@ ../build_musl/libsgxlkl-user.so || true
 
-obj/user/enter.o: $(U_SRC_DIR)/enter.c
+obj/user/enter.o: $(U_SRC_DIR)/enter.c $(LOBJS) $(LDSO_OBJS)
 	mkdir -p obj/user
 	$(CC) -c -m64 -g -fPIC -Werror $(CFLAGS_ALL) -o $@ $<
 
-obj/user/stubs.o: $(U_SRC_DIR)/stubs.c
+obj/user/stubs.o: $(U_SRC_DIR)/stubs.c $(LOBJS) $(LDSO_OBJS)
 	mkdir -p obj/user
 	$(CC) -c -m64 -g -fPIC -Werror $(CFLAGS_ALL) -o $@ $<
 
