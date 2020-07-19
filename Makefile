@@ -70,7 +70,7 @@ ALL_INCLUDES = $(sort $(INCLUDES:$(srcdir)/%=%) $(GENH:obj/%=%) $(ARCH_INCLUDES:
 EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv dl
 EMPTY_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
 CRT_LIBS = $(addprefix lib/,$(notdir $(CRT_OBJS)))
-SHARED_LIBS = lib/libsgxlkl.so
+SHARED_LIBS = lib/libsgxlkl.so lib/libsgxlkl-user.so
 ALL_LIBS = $(CRT_LIBS) $(SHARED_LIBS) $(EMPTY_LIBS) 
 ALL_TOOLS = obj/musl-gcc
 
@@ -199,6 +199,65 @@ lib/libsgxlkl.so: $(LOBJS) $(LDSO_OBJS) $(lkllib) $(sgxlkllib) $(sgxlkllibs)
 # $(CFLAGS_ALL) $(LDFLAGS_ALL) 
 #	$(CC) $(CFLAGS_ALL) $(LDFLAGS_ALL) -nostdlib -shared -Wl,-z,defs -Wl,-e,_dlstart_c \ 
 # -o $@ lib/sgxcrt.o $(LOBJS) obj/sgxlkl/*.o $(LDSO_OBJS) $(LIBCC) $(sgxlkllibs) $(lkllib) 
+
+##==============================================================================
+##
+## lib/libsgxlkl-user.so:
+##
+##==============================================================================
+
+#U_LDFLAGS =
+#U_LDFLAGS += -Wl,-esgxlkl_user_enter
+#U_LDFLAGS += -nostdlib
+#U_LDFLAGS += -nodefaultlibs
+#U_LDFLAGS += -nostartfiles
+#U_LDFLAGS += -Wl,--no-undefined
+#U_LDFLAGS += -Wl,-Bstatic
+#U_LDFLAGS += -Wl,-Bsymbolic
+#U_LDFLAGS += -Wl,--export-dynamic
+#U_LDFLAGS += -Wl,-pie
+#U_LDFLAGS += -Wl,--build-id
+#U_LDFLAGS += -Wl,-z,noexecstack
+#U_LDFLAGS += -Wl,-z,now
+#U_LDFLAGS += -Wl,-gc-sections
+#U_LDFLAGS += -Wl,--export-dynamic
+
+U_LDFLAGS1 = -Wl,--sort-section,alignment -Wl,--sort-common -Wl,--gc-sections -Wl,--hash-style=both -Wl,--no-undefined -Wl,--exclude-libs=ALL -Wl,--dynamic-list=./dynamic.list -nostdlib -nodefaultlibs -nostartfiles
+U_LDFLAGS1 += -Wl,-esgxlkl_user_enter
+
+U_LDFLAGS2 = -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id -Wl,-z,noexecstack -Wl,-z,now
+
+.PHONY: user
+.PHONY: lib/libsgxlkl-user.so
+
+user: lib/libsgxlkl-user.so
+
+U_SRC_DIR = ../src/user
+
+U_OBJ_DIR = ./obj/user
+
+U_OBJS = $(LOBJS) $(LDSO_OBJS) $(U_OBJ_DIR)/enter.o $(U_OBJ_DIR)/stubs.o
+
+# ATTN: integrate libsgxlkl-user.so install (see configure script).
+
+lib/libsgxlkl-user.so: $(U_OBJS)
+	@echo "LD $@"
+	$(CC) -o $@ $(U_LDFLAGS1) $(U_OBJS) $(LIBCC) $(U_LDFLAGS2)
+	$(INSTALL) -D $@ ../build_musl/libsgxlkl-user.so || true
+
+obj/user/enter.o: $(U_SRC_DIR)/enter.c
+	mkdir -p obj/user
+	$(CC) -c -m64 -g -fPIC -Werror $(CFLAGS_ALL) -o $@ $<
+
+obj/user/stubs.o: $(U_SRC_DIR)/stubs.c
+	mkdir -p obj/user
+	$(CC) -c -m64 -g -fPIC -Werror $(CFLAGS_ALL) -o $@ $<
+
+##==============================================================================
+##
+##
+##
+##==============================================================================
 
 $(EMPTY_LIBS):
 	rm -f $@
