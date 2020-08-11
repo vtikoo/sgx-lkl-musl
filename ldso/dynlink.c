@@ -652,15 +652,49 @@ static void unmap_library(struct dso *dso)
 	}
 }
 
-void __attribute__ ((noinline)) __gdb_hook_load_debug_symbols(struct dso *dso, void *symmem, ssize_t symsz)
+#if 0
+
+void __attribute__ ((noinline))
+__gdb_hook_load_debug_symbols(struct dso *dso, void *symmem, ssize_t symsz)
 {
-	__asm__ volatile ("" : : "m" (dso), "m" (symmem), "m" (symsz));
+    __asm__ volatile ("" : : "m" (dso), "m" (symmem), "m" (symsz));
 }
 
-void __attribute__ ((noinline)) __gdb_hook_load_debug_symbols_from_file(struct dso *dso, char *libpath)
+void __attribute__ ((noinline))
+__gdb_hook_load_debug_symbols_from_file(struct dso *dso, char *libpath)
 {
-	__asm__ volatile ("" : : "m" (dso), "m" (libpath));
+    __asm__ volatile ("" : : "m" (dso), "m" (libpath));
 }
+
+void __attribute__ ((noinline))
+__gdb_hook_load_debug_symbols_wrap(struct dso *dso, void *symmem, ssize_t symsz)
+{
+    return __gdb_hook_load_debug_symbols(dso, symmem, symsz);
+}
+
+void __attribute__ ((noinline))
+__gdb_hook_load_debug_symbols_from_file_wrap(struct dso *dso, char *libpath)
+{
+    return __gdb_hook_load_debug_symbols_from_file(dso, libpath);
+}
+
+#else
+
+void __attribute__((noinline)) __attribute__((__weak__))
+__gdb_hook_load_debug_symbols_wrap(struct dso *dso, void *symmem, ssize_t symsz)
+{
+    /* this is overriden in user space by sgx-lkl/src/user/enter.c */
+    sgxlkl_warn("*************** weak: %s\n", __FUNCTION__);
+}
+
+void __attribute__((noinline)) __attribute__((__weak__))
+__gdb_hook_load_debug_symbols_from_file_wrap(struct dso *dso, char *libpath)
+{
+    /* this is overriden in user space by sgx-lkl/src/user/enter.c */
+    sgxlkl_warn("*************** weak: %s\n", __FUNCTION__);
+}
+
+#endif
 
 /* can't be static, we need to keep the symbol alive */
 int __gdb_load_debug_symbols_alive = 0;
@@ -684,7 +718,9 @@ static void __gdb_load_debug_symbols(int fd, struct dso *dso, Ehdr *eh)
 	char buf[30];
 	char linkname[PATH_MAX] = {0};
 
+#if 1
 	if (!__gdb_load_debug_symbols_alive) return;
+#endif
 
 	/* try to reverse-engineer the filename we're loading from */
 	/* warning: this is racy! */
@@ -823,7 +859,7 @@ foundpath:
 		size_t path_len = strlen(debugmount) + strlen(debugpath);
 		char debugmountpath[path_len + 1];
 		snprintf(debugmountpath, path_len + 1, "%s%s", debugmount, debugpath);
-		__gdb_hook_load_debug_symbols_from_file(dso, debugmountpath);
+		__gdb_hook_load_debug_symbols_from_file_wrap(dso, debugmountpath);
 	} else {
 		/* allocate memory for the symbols */
 		symmem = malloc(fdstat.st_size);
@@ -841,7 +877,7 @@ foundpath:
 		}
 
 		/* invoke gdb */
-		__gdb_hook_load_debug_symbols(dso, symmem, fdstat.st_size);
+		__gdb_hook_load_debug_symbols_wrap(dso, symmem, fdstat.st_size);
 	}
 
 fail:
@@ -1029,6 +1065,7 @@ done_mapping:
 	dso->base = base;
 	dso->dynv = laddr(dso, dyn);
 	if (dso->tls.size) dso->tls.image = laddr(dso, tls_image);
+sgxlkl_warn("__gdb_load_debug_symbols\n");
 	__gdb_load_debug_symbols(fd, dso, eh);
 	free(allocated_buf);
 	return map;
